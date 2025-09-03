@@ -2,65 +2,66 @@ name: CI (Java + Maven + SonarCloud)
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - "**/*.java"
-      - "pom.xml"
-      - ".github/workflows/**"
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch: {}
-  schedule:
-    - cron: "10 2 * * *"   # Daily at 02:10
+      branches: [ "main" ]
+          paths:
+                - "**/*.java"
+                      - "pom.xml"
+                            - ".github/workflows/**"
+                              pull_request:
+                                  branches: [ "main" ]
+                                    workflow_dispatch: {}
+                                      schedule:
+                                          - cron: "10 2 * * *"   # Daily at 02:10
 
-env:
-  JAVA_VERSION: "17"
+                                          env:
+                                            JAVA_VERSION: "17"
 
-jobs:
-  # Job 1: Build & Test with a matrix (parallel JDKs)
-  build_test:
-    name: Build & Test (JDK ${{ matrix.jdk }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        jdk: [ '17', '21' ]    # Matrix build (2 Java versions)
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+                                            jobs:
+                                              # Job 1: Build & Test with a matrix (parallel JDKs)
+                                                build_test:
+                                                    name: Build & Test (JDK ${{ matrix.jdk }})
+                                                        runs-on: ubuntu-latest
+                                                            strategy:
+                                                                  fail-fast: false
+                                                                        matrix:
+                                                                                jdk: [ '17', '21' ]    # Matrix build (2 Java versions)
+                                                                                    steps:
+                                                                                          - name: Checkout
+                                                                                                  uses: actions/checkout@v4
 
-      - name: Setup Temurin JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.jdk }}
-          cache: 'maven'
+                                                                                                        - name: Setup Temurin JDK
+                                                                                                                uses: actions/setup-java@v4
+                                                                                                                        with:
+                                                                                                                                  distribution: 'temurin'
+                                                                                                                                            java-version: ${{ matrix.jdk }}
+                                                                                                                                                      cache: 'maven'
 
-      - name: Build & Test
-        run: mvn -B -e -ntp clean verify
+                                                                                                                                                            - name: Build & Test
+                                                                                                                                                                    run: mvn -B -e -ntp clean verify
 
-  # Job 2: SonarCloud analysis (runs in parallel with build_test)
-  sonar:
-    name: SonarCloud Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+                                                                                                                                                                      # Job 2: SonarCloud analysis (runs in parallel with build_test)
+                                                                                                                                                                        sonar:
+                                                                                                                                                                            name: SonarCloud Scan
+                                                                                                                                                                                runs-on: ubuntu-latest
+                                                                                                                                                                                    steps:
+                                                                                                                                                                                          - name: Checkout
+                                                                                                                                                                                                  uses: actions/checkout@v4
 
-      - name: Setup Temurin JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: 'maven'
+                                                                                                                                                                                                        - name: Setup Temurin JDK
+                                                                                                                                                                                                                uses: actions/setup-java@v4
+                                                                                                                                                                                                                        with:
+                                                                                                                                                                                                                                  distribution: 'temurin'
+                                                                                                                                                                                                                                            java-version: ${{ env.JAVA_VERSION }}
+                                                                                                                                                                                                                                                      cache: 'maven'
 
-      # Using Maven scanner so no extra files needed
-      - name: Analyze with SonarCloud
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn -B -ntp verify sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=${{ secrets.SONAR_ORG }} \
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+                                                                                                                                                                                                                                                            # Using Maven scanner so no extra files needed
+                                                                                                                                                                                                                                                                  - name: Analyze with SonarCloud
+                                                                                                                                                                                                                                                                          env:
+                                                                                                                                                                                                                                                                                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                                                                                                                                                                                                                                                                                            run: |
+                                                                                                                                                                                                                                                                                                      mvn -B -ntp verify sonar:sonar \
+                                                                                                                                                                                                                                                                                                                  -Dsonar.host.url=https://sonarcloud.io \
+                                                                                                                                                                                                                                                                                                                              -Dsonar.organization=${{ secrets.SONAR_ORG }} \
+                                                                                                                                                                                                                                                                                                                                          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+                                                                                                                                                                                                                                                                                                                                                      -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+                                                                                                                                                                                                                                                                                                                                                      
