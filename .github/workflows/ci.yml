@@ -1,6 +1,7 @@
 ---
 name: CI (Java + Maven + SonarCloud)
 
+
 on:
   push:
     branches: ["main"]
@@ -10,7 +11,7 @@ on:
       - ".github/workflows/**"
   pull_request:
     branches: ["main"]
-  workflow_dispatch: true
+  workflow_dispatch:
 
   schedule:
     - cron: "10 2 * * *"   # Daily at 02:10
